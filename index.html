@@ -15,19 +15,16 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet"
   />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    integrity="sha512-SnH5WK+bZxgPHs44uWix+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkR4X2f1QX4l7lW8Wc2qM4YkN9+0kJQx0h2Q=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="hero">
     <nav class="topbar">
       <a href="#" class="brand">KP</a>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark mode">
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+        <span class="theme-label">Dark</span>
+      </button>
     </nav>
 
     <div class="hero-content">
@@ -37,6 +34,11 @@
         I design and deliver intelligent, cloud-scale systems — from LLM-powered agents and cybersecurity platforms to microservices,
         data infrastructure, and mobile applications.
       </p>
+      <div class="quick-contact">
+        <a href="#experience">Experience</a>
+        <a href="#skills">Core Skills</a>
+        <a href="#projects">Projects</a>
+      </div>
     </div>
   </header>
 
@@ -120,7 +122,7 @@
       </div>
     </section>
 
-    <section class="card two-column">
+    <section class="card two-column" id="projects">
       <div>
         <h2>Education</h2>
         <ul class="list">
@@ -141,5 +143,29 @@
       </div>
     </section>
   </main>
+
+  <script>
+    const toggle = document.getElementById('themeToggle');
+    const icon = toggle.querySelector('.theme-icon');
+    const label = toggle.querySelector('.theme-label');
+
+    const applyTheme = (theme) => {
+      document.body.dataset.theme = theme;
+      const isLight = theme === 'light';
+      icon.textContent = isLight ? '☀️' : '🌙';
+      label.textContent = isLight ? 'Light' : 'Dark';
+    };
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      applyTheme(savedTheme);
+    }
+
+    toggle.addEventListener('click', () => {
+      const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+      applyTheme(next);
+      localStorage.setItem('theme', next);
+    });
+  </script>
 </body>
 </html>
