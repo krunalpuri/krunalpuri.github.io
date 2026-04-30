@@ -1,171 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta
-    name="description"
-    content="Krunal Puri portfolio — Senior Data Scientist and Software Engineer specializing in AI, cloud-native systems, and scalable architectures."
-  />
-  <title>Krunal Puri | Senior Data Scientist & Software Engineer</title>
+  <meta name="description"
+    content="Krunal Puri portfolio — Senior Data Scientist and Software Engineer specializing in AI, cloud-native systems, and scalable architectures." />
+  <title>Krunal Puri | AI Engineer & Data Scientist</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <canvas id="neural-bg"></canvas>
+
+  <div class="glow-overlay"></div>
+
   <header class="hero">
     <nav class="topbar">
-      <a href="#" class="brand">KP</a>
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark mode">
-        <span class="theme-icon" aria-hidden="true">🌙</span>
-        <span class="theme-label">Dark</span>
-      </button>
+      <div class="brand">KP_SYS_INIT</div>
     </nav>
 
     <div class="hero-content">
-      <p class="eyebrow">Senior Data Scientist • Full-Stack Engineer • AI Builder</p>
-      <h1>Krunal Puri</h1>
-      <p class="subtitle">
-        I design and deliver intelligent, cloud-scale systems — from LLM-powered agents and cybersecurity platforms to microservices,
-        data infrastructure, and mobile applications.
-      </p>
+      <div class="terminal-container glass-card tilt-element">
+        <div class="terminal-header">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="terminal-title">user@system: ~</span>
+        </div>
+        <div class="terminal-body">
+          <p class="prompt"><span>&gt;</span> whoami</p>
+          <h1 class="glitch" data-text="Krunal Puri">Krunal Puri</h1>
+          <p class="prompt"><span>&gt;</span> cat profile.txt</p>
+          <div class="terminal-output" id="typewriter"></div>
+        </div>
+      </div>
+
       <div class="quick-contact">
-        <a href="#experience">Experience</a>
-        <a href="#skills">Core Skills</a>
-        <a href="#projects">Projects</a>
+        <a href="#experience" class="btn-neon">Execute ./experience.sh</a>
+        <a href="#skills" class="btn-neon">Load Skills</a>
+        <a href="#projects" class="btn-neon">View Modules</a>
       </div>
     </div>
   </header>
 
   <main class="container">
-    <section class="card" id="skills">
-      <h2>Core Skills</h2>
+    <section id="skills" class="section-block">
+      <h2 class="section-title"><span>[</span> Core Architecture <span>]</span></h2>
       <div class="skill-grid">
-        <article>
-          <h3>Programming</h3>
-          <p>Java, Python, Go, Dart, JavaScript, TypeScript, PHP, C</p>
+        <article class="card glass-card tilt-element">
+          <div class="card-icon">⚡</div>
+          <h3>Languages</h3>
+          <p>Java, Python, Dart, Go, TypeScript, JavaScript, C, C++, PHP, Ruby, CUDA C</p>
         </article>
-        <article>
+        <article class="card glass-card tilt-element">
+          <div class="card-icon">🗄️</div>
           <h3>Data Platforms</h3>
-          <p><strong>SQL:</strong> MariaDB, PostgreSQL, SQLite, SQL Server</p>
-          <p><strong>NoSQL:</strong> MongoDB, Redis, DynamoDB, Firebase</p>
-          <p><strong>Big Data:</strong> Spark, Hadoop</p>
+          <p><span class="highlight">SQL:</span> MariaDB, PostgreSQL, SQLite, SQL Server</p>
+          <p><span class="highlight">NoSQL:</span> MongoDB, Redis, DynamoDB, Firebase</p>
+          <p><span class="highlight">Big Data:</span> Spark, Hadoop</p>
         </article>
-        <article>
-          <h3>DevOps & Cloud</h3>
-          <p>Git, Docker, Jenkins, OpenShift, AWS CloudFormation, Ansible, Terraform</p>
-          <p>AWS (Solutions Architect Associate), Azure, GCP</p>
+        <article class="card glass-card tilt-element">
+          <div class="card-icon">☁️</div>
+          <h3>Cloud & DevOps</h3>
+          <p>AWS, Docker, Jenkins, OpenShift, OpenStack, CI/CD, IaC</p>
         </article>
-        <article>
-          <h3>Web, AI/ML & OS</h3>
-          <p>Spring, Flask, Socket.IO, Express.js, Angular, React.js, Node.js, HTML5/CSS3</p>
+        <article class="card glass-card tilt-element">
+          <div class="card-icon">🧠</div>
+          <h3>AI/ML & Web</h3>
           <p>PyTorch, TensorFlow, LangChain, LangGraph</p>
-          <p>Linux, Mac, Windows, Android</p>
+          <p>Spring, React.js, Node.js, Express.js</p>
         </article>
       </div>
     </section>
 
-    <section class="card" id="experience">
-      <h2>Experience</h2>
+    <section id="experience" class="section-block">
+      <h2 class="section-title"><span>[</span> Execution Logs <span>]</span></h2>
       <div class="timeline">
-        <article class="timeline-item">
+        <article class="timeline-item glass-card tilt-element">
+          <div class="timeline-dot"></div>
           <h3>Senior Data Scientist</h3>
+          <p class="meta">BCM Consulting Group LLC &bull; Jan 2018 – Present</p>
           <ul>
-            <li>Designed Stormshield, an AI agentic cybersecurity analysis platform.</li>
+            <li>Designed an AI agentic cybersecurity analysis platform.</li>
             <li>Built LLM-driven automation agents with Azure OpenAI and LangChain.</li>
-            <li>Developed ML solutions across NLP, entity recognition, malware detection, and sentiment analysis.</li>
-            <li>Built microservices in Java (Spring Boot, REST, JPA) and Go (Gin, Keycloak).</li>
-            <li>Led a team of 4 engineers to deliver a Flutter-based mobile app and modernized ERP into microservices.</li>
+            <li>Developed ML solutions across NLP, entity recognition, and malware detection.</li>
+            <li>Built microservices in Java (Spring Boot) and Go (Gin, Keycloak).</li>
           </ul>
         </article>
 
-        <article class="timeline-item">
-          <h3>Research Assistant — NIST</h3>
-          <p class="meta">Gaithersburg, MD</p>
+        <article class="timeline-item glass-card tilt-element">
+          <div class="timeline-dot"></div>
+          <h3>Research Assistant</h3>
+          <p class="meta">NIST &bull; Gaithersburg, MD</p>
           <ul>
-            <li>Built the Evaluation Management System (EMS) for data science competitions.</li>
+            <li>Built Evaluation Management System (EMS) for data science competitions.</li>
             <li>Designed scalable architecture for launching Spark and Hadoop workloads.</li>
-            <li>Deployed OpenStack with big data framework support and distributed process monitoring.</li>
+            <li>Deployed OpenStack with big data framework support.</li>
           </ul>
         </article>
 
-        <article class="timeline-item">
-          <h3>Research Assitant/Teaching Assitant — George Washington University</h3>
+        <article class="timeline-item glass-card tilt-element">
+          <div class="timeline-dot"></div>
+          <h3>Software Engineer Roles</h3>
+          <p class="meta">Various &bull; George Washington University</p>
           <ul>
-            <li>Worked on a distributed face recognition system using MPI.</li>
-            <li>Supported HPC infrastructure and developed cluster automation scripts.</li>
-            <li>Conducted labs and coursework support.</li>
-          </ul>
-        </article>
-
-        <article class="timeline-item">
-          <h3>Junior Software Engineer</h3>
-          <ul>
-            <li>Built a secure messaging application using STIX/TAXII (Java, Groovy, Grails).</li>
-            <li>Optimized malware detection software for GPU acceleration.</li>
-          </ul>
-        </article>
-
-        <article class="timeline-item">
-          <h3>Software Developer Intern</h3>
-          <ul>
-            <li>Developed a GPU-based big data analytics engine (CUDA C).</li>
-            <li>Built Hadoop-based big data systems on AWS and optimized MapReduce jobs.</li>
-            <li>Contributed to the Alenka SQL engine in an Agile team.</li>
+            <li>Distributed face recognition system using MPI.</li>
+            <li>Built secure messaging app using STIX/TAXII.</li>
+            <li>Developed GPU-based big data analytics engines.</li>
           </ul>
         </article>
       </div>
     </section>
 
-    <section class="card two-column" id="projects">
-      <div>
-        <h2>Education</h2>
-        <ul class="list">
-          <li><strong>George Washington University</strong> — PhD in Computer Engineering (Part-time)</li>
-          <li><strong>George Washington University</strong> — MS in Computer Science</li>
+    <section id="projects" class="two-column section-block">
+      <div class="card glass-card tilt-element">
+        <h2 class="section-title"><span>[</span> Education & Certs <span>]</span></h2>
+        <ul class="list terminal-list">
+          <li><strong>PhD in Computer Engineering (In Progress)</strong><br />The George Washington University</li>
+          <li><strong>Master’s in Computer Science</strong><br />The George Washington University</li>
+          <li><strong>AWS Certified Solutions Architect</strong><br />Associate Level</li>
         </ul>
       </div>
-      <div>
-        <h2>Featured Projects</h2>
-        <ul class="list">
-          <li>Blockchain-based data provenance framework</li>
-          <li>Evaluation Management System (EMS)</li>
-          <li>Docker performance analysis with big data frameworks</li>
-          <li>Multi-GPU database engine architecture</li>
-          <li>WMATA Alarm Android app</li>
-          <li>Smart irrigation system using WSN and GIS</li>
+      <div class="card glass-card tilt-element">
+        <h2 class="section-title"><span>[</span> Featured Projects & Publications <span>]</span></h2>
+        <ul class="list terminal-list">
+          <li><strong>Research Publication</strong><br /><a
+              href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=3LQCyXQAAAAJ&sortby=pubdate&citation_for_view=3LQCyXQAAAAJ:BOlwja0KXvYC"
+              target="_blank" style="color: var(--accent-cyan); text-decoration: none;">View on Google Scholar</a>
+          </li>
+          <li><strong>Blockchain Data Provenance</strong><br />System for data integrity in distributed environments.
+          </li>
+          <li><strong>Evaluation Management System (NIST)</strong><br />Platform for benchmarking data science models.
+          </li>
+          <li><strong>WMATA Smart Alarm App</strong><br />Android app using motion detection for transit alerts.</li>
+          <li><strong>Smart Irrigation System</strong><br />GIS + sensor-based system for soil moisture monitoring.</li>
         </ul>
       </div>
     </section>
   </main>
 
-  <script>
-    const toggle = document.getElementById('themeToggle');
-    const icon = toggle.querySelector('.theme-icon');
-    const label = toggle.querySelector('.theme-label');
-
-    const applyTheme = (theme) => {
-      document.body.dataset.theme = theme;
-      const isLight = theme === 'light';
-      icon.textContent = isLight ? '☀️' : '🌙';
-      label.textContent = isLight ? 'Light' : 'Dark';
-    };
-
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      applyTheme(savedTheme);
-    }
-
-    toggle.addEventListener('click', () => {
-      const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
-      applyTheme(next);
-      localStorage.setItem('theme', next);
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
+
 </html>
