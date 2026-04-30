@@ -1,5 +1,5 @@
 // Typewriter effect
-const textToType = "Highly experienced software engineer with 8+ years of building scalable applications across web, mobile, and cloud platforms. Strong background in microservices architecture, distributed systems, and cloud-native development on AWS.";
+const textToType = "Highly experienced Senior Data Scientist and AI Engineer with 8+ years of expertise in building intelligent, scalable systems. Strong background in developing LLM-driven agents, machine learning pipelines, and deploying advanced AI models across cloud platforms.";
 const typeWriterElement = document.getElementById('typewriter');
 let i = 0;
 

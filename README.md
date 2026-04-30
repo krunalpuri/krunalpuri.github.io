@@ -1,9 +1,9 @@
 # Krunal Puri 
-**Software Engineer | Full Stack | Cloud | AI/ML | Blockchain**
+**Senior Data Scientist | AI/ML Engineer | Full Stack | Cloud | Blockchain**
 
-Highly experienced software engineer with 8+ years of building scalable applications across web, mobile, and cloud platforms. Strong background in microservices architecture, distributed systems, and cloud-native development on AWS. Proven ability to lead projects end-to-end, from system design to deployment.
+Highly experienced Senior Data Scientist and AI Engineer with 8+ years of expertise in building intelligent, scalable systems. Strong background in developing LLM-driven agents, machine learning pipelines, and deploying advanced AI models across cloud platforms. Proven ability to lead complex projects end-to-end, integrating state-of-the-art AI into microservices architectures.
 
-Skilled in modern backend and frontend technologies, mobile app development, and machine learning. Experienced in designing secure, high-performance systems and working with emerging technologies including blockchain and AI.
+Skilled in natural language processing, entity recognition, predictive modeling, and modern backend/frontend technologies. Deeply experienced in designing secure, high-performance data infrastructure and working with emerging paradigms including autonomous AI agents, cloud-native systems, and blockchain.
 
 ## 🛠️ Core Skills
 
