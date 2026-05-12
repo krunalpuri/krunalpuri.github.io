@@ -146,7 +146,252 @@
     </section>
   </main>
 
+  <!-- Floating Chatbot -->
+  <button id="chatbot-toggle" class="floating-chat-btn">
+    <span class="chatbot-icon">💬</span>
+  </button>
+
+  <div id="chatbot-window" class="floating-chat-window glass-card hidden">
+    <div class="chatbot-header">
+      <h4>Ask AI</h4>
+      <button id="chatbot-close" class="close-btn">&times;</button>
+    </div>
+    <div class="chatbot-messages" id="chatbot-messages">
+      <div class="chat-message bot-message">
+        I am the digital AI persona of Krunal Puri. Ask me anything about my experience, skills, or projects!
+      </div>
+    </div>
+    <div class="chatbot-input-area">
+      <input type="text" id="ai-input" class="chat-input" placeholder="Ask a question..." autocomplete="off">
+      <button id="ai-run-button" class="chat-send-btn">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+
   <script src="script.js"></script>
+  <script type="module">
+    import { pipeline, cos_sim } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers";
+
+    let extractor = null;
+    let generator = null;
+    let knowledgeBase = [];
+    let chatHistory = JSON.parse(localStorage.getItem('kp_chat_history')) || [];
+
+    async function initAI() {
+      if (!extractor) {
+        extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+        prepareKnowledgeBase();
+      }
+      return extractor;
+    }
+
+    async function initGenerator() {
+      if (!generator) {
+        // Upgraded to a more capable 0.5B parameter model that follows instructions much better
+        generator = await pipeline('text-generation', 'onnx-community/Qwen2.5-0.5B-Instruct');
+      }
+      return generator;
+    }
+
+    function prepareKnowledgeBase() {
+      if (knowledgeBase.length > 0) return;
+      
+      // 1. Extract experience timeline chunks
+      document.querySelectorAll('.timeline-item').forEach(item => {
+        const role = item.querySelector('h3') ? item.querySelector('h3').innerText : '';
+        const company = item.querySelector('.meta') ? item.querySelector('.meta').innerText : '';
+        const contextStr = `${role} at ${company}`;
+        
+        item.querySelectorAll('li').forEach(li => {
+          const text = li.innerText.replace(/\s+/g, ' ').trim();
+          if (text.length > 5) knowledgeBase.push({ text: `Experience - ${contextStr}: ${text}` });
+        });
+      });
+
+      // 2. Extract standard card chunks (Skills, Summary, Education)
+      document.querySelectorAll('.card').forEach(card => {
+        const titleMatch = card.querySelector('.section-title');
+        let sectionTitle = titleMatch ? titleMatch.innerText.replace(/\[|\]/g, '').trim() : '';
+        
+        card.querySelectorAll('li').forEach(li => {
+          const text = li.innerText.replace(/\s+/g, ' ').trim();
+          if (text.length > 5) knowledgeBase.push({ text: `${sectionTitle}: ${text}` });
+        });
+        
+        card.querySelectorAll('p:not(.meta)').forEach(p => {
+          const text = p.innerText.replace(/\s+/g, ' ').trim();
+          if (text.length > 5) knowledgeBase.push({ text: `${sectionTitle}: ${text}` });
+        });
+      });
+
+      // Fallback answers injected as chunks
+      knowledgeBase.push({ text: "I am Krunal Puri's digital AI persona, embedded in this portfolio to answer questions about my experience, skills, and projects."});
+      knowledgeBase.push({ text: "I am Krunal Puri, a Senior Data Scientist and AI Engineer with over 8 years of experience building scalable systems and AI solutions."});
+      knowledgeBase.push({ text: "I know the following programming languages: Java, Python, Dart, Go, TypeScript, JavaScript, C, C++, PHP, Ruby, and CUDA C."});
+      knowledgeBase.push({ text: "My Cloud and DevOps experience includes AWS, Docker, Jenkins, OpenShift, OpenStack, CI/CD, and Infrastructure as Code."});
+      knowledgeBase.push({ text: "I received my Master's degree in Computer Science from The George Washington University."});
+      knowledgeBase.push({ text: "At NIST, I was a Guest Researcher and I developed the Evaluation Management System for data science competitions."});
+    }
+
+    function addMessage(text, isUser = false, isLoading = false) {
+      const messagesContainer = document.getElementById("chatbot-messages");
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `chat-message ${isUser ? 'user-message' : 'bot-message'}`;
+      if (isLoading) msgDiv.classList.add("message-loading");
+      msgDiv.innerHTML = text;
+      messagesContainer.appendChild(msgDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      return msgDiv;
+    }
+
+    function renderHistory() {
+      const messagesContainer = document.getElementById("chatbot-messages");
+      messagesContainer.innerHTML = `
+        <div class="chat-message bot-message">
+          I am the digital AI persona of Krunal Puri. Ask me anything about my experience, skills, or projects!
+        </div>
+      `;
+      chatHistory.forEach(msg => {
+        addMessage(msg.content, msg.role === 'user');
+      });
+    }
+    
+    // Render any saved history immediately
+    renderHistory();
+
+    async function runDemo() {
+      const inputElement = document.getElementById("ai-input");
+      const input = inputElement.value.trim();
+      const button = document.getElementById("ai-run-button");
+
+      if (!input) return;
+
+      addMessage(input, true);
+      inputElement.value = "";
+      button.disabled = true;
+
+      let typingHtml = `<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+      
+      let downloadNote = !extractor ? `<div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px; font-style: normal;">Downloading Search Model...</div>` : "";
+
+      let loadingMsg = addMessage(typingHtml + downloadNote, false, true);
+
+      try {
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        // 1. Fast Semantic Search
+        const model = await initAI();
+
+        // Generate embedding for the user's question
+        const output = await model(input, { pooling: 'mean', normalize: true });
+        const questionEmbedding = output.data;
+
+        // Compare question to every chunk in the knowledge base
+        let bestMatch = { score: -1, text: "" };
+
+        for (const chunk of knowledgeBase) {
+          const chunkOutput = await model(chunk.text, { pooling: 'mean', normalize: true });
+          const score = cos_sim(questionEmbedding, chunkOutput.data);
+
+          if (score > bestMatch.score) {
+            bestMatch = { score, text: chunk.text };
+          }
+        }
+
+        loadingMsg.classList.remove("message-loading");
+
+        // Threshold lowered slightly since precise sentences may yield lower cosine similarity against specific queries
+        if (bestMatch.score < 0.15) {
+          loadingMsg.classList.remove("message-loading");
+          loadingMsg.innerHTML = `<span style="color: var(--accent-pink);">I'm not completely sure about that based on the portfolio.</span>
+            <div style="margin-top: 8px; font-size: 0.85rem; color: var(--muted);">Try asking something like:</div>
+            <ul class="suggestion-list" onclick="if(event.target.tagName === 'LI') { document.getElementById('ai-input').value = event.target.innerText; document.getElementById('ai-run-button').click(); }">
+              <li>What programming languages do you know?</li>
+              <li>Tell me about your Cloud and DevOps experience.</li>
+              <li>Where did you get your Master's degree?</li>
+              <li>What did you do at NIST?</li>
+            </ul>`;
+        } else {
+          // 2. Display Loading State (Hide Raw Fast Match for persona immersion)
+          let answer = bestMatch.text;
+          let genLoadingNote = !generator ? "Downloading AI model..." : "Thinking...";
+          
+          loadingMsg.innerHTML = `
+            ${typingHtml}
+            <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px; font-style: normal;">${genLoadingNote}</div>
+          `;
+
+          // Yield thread so UI updates immediately
+          await new Promise(resolve => setTimeout(resolve, 50));
+
+          // 3. Generative RAG flow
+          const genModel = await initGenerator();
+          
+          const systemPrompt = "You are Krunal Puri. Speak in the first person (I, me, my). Answer the user's question using ONLY the provided context. Keep your answer to exactly one short sentence. If the user greets you, ask for their name.";
+          
+          const messages = [
+            { role: "system", content: systemPrompt }
+          ];
+          
+          // Include up to last 4 messages (2 turns) for memory
+          const recentHistory = chatHistory.slice(-4);
+          for (const msg of recentHistory) {
+            messages.push(msg);
+          }
+          
+          // Add current turn with context
+          messages.push({ role: "user", content: `Context information is below.\n---------------------\n${bestMatch.text}\n---------------------\nGiven the context information, answer the following question: ${input}` });
+          
+          const prompt = genModel.tokenizer.apply_chat_template(messages, { tokenize: false, add_generation_prompt: true });
+          // Restrict tokens and use low temp to prevent run-on hallucinations
+          const genResult = await genModel(prompt, { max_new_tokens: 100, temperature: 0.1, top_p: 0.9, return_full_text: false });
+          
+          let generatedText = genResult[0].generated_text.trim();
+          
+          // Save to history
+          chatHistory.push({ role: "user", content: input });
+          chatHistory.push({ role: "assistant", content: generatedText });
+          localStorage.setItem('kp_chat_history', JSON.stringify(chatHistory));
+          
+          loadingMsg.classList.remove("message-loading");
+          loadingMsg.innerHTML = `<span style="color: var(--accent-cyan);">${generatedText}</span>`;
+        }
+      } catch (error) {
+        console.error(error);
+        loadingMsg.classList.remove("message-loading");
+        loadingMsg.innerHTML = "<span style='color: var(--accent-pink);'>Sorry, I couldn't process that question.</span>";
+      } finally {
+        button.disabled = false;
+        document.getElementById("chatbot-messages").scrollTop = document.getElementById("chatbot-messages").scrollHeight;
+        inputElement.focus();
+      }
+    }
+
+    document.getElementById("ai-run-button").addEventListener("click", runDemo);
+    document.getElementById("ai-input").addEventListener("keypress", function (e) {
+      if (e.key === "Enter") runDemo();
+    });
+
+    // Chatbot Toggle Logic
+    const chatbotToggle = document.getElementById("chatbot-toggle");
+    const chatbotWindow = document.getElementById("chatbot-window");
+    const chatbotClose = document.getElementById("chatbot-close");
+
+    function toggleChatbot() {
+      chatbotWindow.classList.toggle("hidden");
+      if (!chatbotWindow.classList.contains("hidden")) {
+        initAI(); // Pre-load model when chat is opened
+      }
+    }
+
+    chatbotToggle.addEventListener("click", toggleChatbot);
+    chatbotClose.addEventListener("click", toggleChatbot);
+  </script>
 </body>
 
 </html>
