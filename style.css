@@ -730,3 +730,74 @@ h1.glitch {
   opacity: 0.7;
   text-decoration: underline;
 }
+
+@media (max-width: 768px) {
+  .floating-chat-btn {
+    right: 16px;
+    bottom: 16px;
+    width: 56px;
+    height: 56px;
+    z-index: 1100;
+  }
+
+  .floating-chat-window {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 84px;
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - 110px);
+    border-radius: 14px;
+    z-index: 1099;
+  }
+
+  .chatbot-messages {
+    min-height: 220px;
+    max-height: calc(100dvh - 230px);
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .chat-message {
+    max-width: 92%;
+    font-size: 0.86rem;
+  }
+
+  .chatbot-header {
+    padding: 12px;
+  }
+
+  .chatbot-input-area {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .chat-input {
+    font-size: 16px;
+  }
+
+  .chat-send-btn {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 420px) {
+  .floating-chat-window {
+    left: 8px;
+    right: 8px;
+    bottom: 78px;
+    max-height: calc(100dvh - 96px);
+  }
+
+  .chatbot-messages {
+    max-height: calc(100dvh - 215px);
+  }
+
+  .clear-chat-btn {
+    font-size: 0.65rem;
+    padding: 4px 6px;
+  }
+}

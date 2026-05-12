@@ -209,27 +209,90 @@
       return extractor;
     }
 
+    function isMobileDevice() {
+      return (
+        window.matchMedia('(max-width: 768px)').matches ||
+        /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+      );
+    }
+
+    function getDeviceMemoryGB() {
+      return navigator.deviceMemory || 4;
+    }
+
     function getBestDevice() {
+      // WebGPU support on mobile is inconsistent, so prefer WASM on mobile.
+      if (isMobileDevice()) return 'wasm';
+
       return navigator.gpu ? 'webgpu' : 'wasm';
     }
 
+    function getGeneratorModelConfig() {
+      const isMobile = isMobileDevice();
+      const memoryGB = getDeviceMemoryGB();
+
+      if (isMobile || memoryGB <= 4) {
+        return {
+          model: 'onnx-community/SmolLM2-135M-ONNX',
+          device: 'wasm',
+          dtype: 'q8',
+          maxNewTokens: 40
+        };
+      }
+
+      if (memoryGB <= 8) {
+        return {
+          model: 'onnx-community/SmolLM2-360M-ONNX',
+          device: getBestDevice(),
+          dtype: navigator.gpu ? 'q4f16' : 'q8',
+          maxNewTokens: 60
+        };
+      }
+
+      return {
+        model: 'onnx-community/Llama-3.2-1B-Instruct',
+        device: getBestDevice(),
+        dtype: navigator.gpu ? 'q4f16' : 'q8',
+        maxNewTokens: 70
+      };
+    }
+
+    let generatorConfig = null;
+
     async function initGenerator() {
       if (!generator) {
-        // const device = getBestDevice();
+        generatorConfig = getGeneratorModelConfig();
 
-        // generator = await pipeline(
-        //   'text-generation',
-        //   'onnx-community/Qwen2.5-0.5B-Instruct'
-        // );
+        try {
+          console.log('Loading generator model:', generatorConfig);
 
-        generator = await pipeline(
-          'text-generation',
-          'onnx-community/Llama-3.2-1B-Instruct',
-          {
-            device: getBestDevice(),
-            dtype: navigator.gpu ? 'q4f16' : 'q8'
-          }
-        );
+          generator = await pipeline(
+            'text-generation',
+            generatorConfig.model,
+            {
+              device: generatorConfig.device,
+              dtype: generatorConfig.dtype
+            }
+          );
+        } catch (error) {
+          console.warn('Primary generator failed, falling back to smallest model.', error);
+
+          generatorConfig = {
+            model: 'onnx-community/SmolLM2-135M-ONNX',
+            device: 'wasm',
+            dtype: 'q8',
+            maxNewTokens: 35
+          };
+
+          generator = await pipeline(
+            'text-generation',
+            generatorConfig.model,
+            {
+              device: generatorConfig.device,
+              dtype: generatorConfig.dtype
+            }
+          );
+        }
       }
 
       return generator;
@@ -367,6 +430,36 @@
     // Render any saved history immediately
     renderHistory();
 
+    function shouldSkipGeneration() {
+      // return isMobileDevice() || getDeviceMemoryGB() <= 4;
+      return false;
+    }
+
+    function buildGenerationPrompt(genModel, messages) {
+      if (genModel?.tokenizer?.chat_template) {
+        return genModel.tokenizer.apply_chat_template(messages, {
+          tokenize: false,
+          add_generation_prompt: true
+        });
+      }
+
+      const systemMessage = messages.find(msg => msg.role === "system")?.content || "";
+      const userMessages = messages
+        .filter(msg => msg.role === "user")
+        .map(msg => msg.content)
+        .join("\n\n");
+
+      return `
+      System:
+      ${systemMessage}
+
+      User:
+      ${userMessages}
+
+      Assistant:
+      `.trim();
+    }
+
     async function runDemo() {
       const inputElement = document.getElementById("ai-input");
       const input = inputElement.value.trim();
@@ -425,6 +518,14 @@
 
           loadingMsg.classList.remove("message-loading");
           loadingMsg.innerHTML = `<span style="color: var(--accent-cyan);">${directAnswer}</span>`;
+        } else if (shouldSkipGeneration()) {
+          const directAnswer = bestMatch.text.replace(/^.*?:\s*/, '');
+
+          chatHistory.push({ role: "user", content: input });
+          chatHistory.push({ role: "assistant", content: directAnswer });
+          localStorage.setItem('kp_chat_history', JSON.stringify(chatHistory));
+
+          loadingMsg.innerHTML = `<span style="color: var(--accent-cyan);">${directAnswer}</span>`;
         } else {
           // 2. Display Loading State (Hide Raw Fast Match for persona immersion)
           // let answer = bestMatch.text;
@@ -468,9 +569,14 @@
             content: `Context information is below.\n---------------------\n${ragContext}\n---------------------\nAnswer this question: ${input}`
           });
 
-          const prompt = genModel.tokenizer.apply_chat_template(messages, { tokenize: false, add_generation_prompt: true });
+          const prompt = buildGenerationPrompt(genModel, messages);
           // Restrict tokens and use low temp to prevent run-on hallucinations
-          const genResult = await genModel(prompt, { max_new_tokens: 100, temperature: 0.1, top_p: 0.9, return_full_text: false });
+          const genResult = await genModel(prompt, {
+            max_new_tokens: generatorConfig?.maxNewTokens || 50,
+            temperature: 0.0,
+            do_sample: false,
+            return_full_text: false
+          });
 
           let generatedText = genResult[0].generated_text.trim();
 
@@ -512,10 +618,26 @@
       addMessage("Conversation cache cleared.", false);
     }
 
+    let aiWarmupStarted = false;
+
     function toggleChatbot() {
       chatbotWindow.classList.toggle("hidden");
-      if (!chatbotWindow.classList.contains("hidden")) {
-        initAI(); // Pre-load model when chat is opened
+
+      if (!chatbotWindow.classList.contains("hidden") && !aiWarmupStarted) {
+        aiWarmupStarted = true;
+
+        addMessage("Loading portfolio knowledge. This may take a moment on mobile.", false, true);
+
+        // Let the chat window render first before heavy work starts.
+        setTimeout(async () => {
+          try {
+            await initAI();
+            addMessage("Portfolio knowledge loaded. You can ask me about my experience, skills, or projects.", false);
+          } catch (error) {
+            console.error(error);
+            addMessage("I couldn't load the portfolio knowledge. Please refresh and try again.", false);
+          }
+        }, 150);
       }
     }
 
