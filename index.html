@@ -431,8 +431,7 @@
     renderHistory();
 
     function shouldSkipGeneration() {
-      // return isMobileDevice() || getDeviceMemoryGB() <= 4;
-      return false;
+      return isMobileDevice() || getDeviceMemoryGB() <= 4;
     }
 
     function buildGenerationPrompt(genModel, messages) {
@@ -626,7 +625,7 @@
       if (!chatbotWindow.classList.contains("hidden") && !aiWarmupStarted) {
         aiWarmupStarted = true;
 
-        addMessage("Loading portfolio knowledge. This may take a moment on mobile.", false, true);
+        addMessage("Loading portfolio knowledge. This may take a moment on mobile...", false, true);
 
         // Let the chat window render first before heavy work starts.
         setTimeout(async () => {
