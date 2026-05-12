@@ -180,17 +180,20 @@
 
   <script src="script.js"></script>
   <script type="module">
-    import { pipeline, cos_sim } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers";
+    import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers";
+    import initAltorVec, { WasmSearchEngine } from "https://cdn.jsdelivr.net/npm/altor-vec/+esm";
+    import { loadReadmeKnowledge } from "./rag-utils.js";
 
     let extractor = null;
     let generator = null;
     let knowledgeBase = [];
-    let knowledgeEmbeddingsReady = false;
+    let vectorEngine = null;
+    let vectorIndexReady = false;
     let chatHistory = JSON.parse(localStorage.getItem('kp_chat_history')) || [];
 
-    const MIN_CONFIDENCE_SCORE = 0.15;
-    const DIRECT_ANSWER_SCORE = 0.45;
-    const MAX_HISTORY_MESSAGES = 4;
+    const MIN_CONFIDENCE_SCORE = 0.45;
+    const DIRECT_ANSWER_SCORE = 0.72;
+    const MAX_HISTORY_MESSAGES = 2;
 
     async function initAI() {
       if (!extractor) {
@@ -199,8 +202,8 @@
           'Xenova/all-MiniLM-L6-v2'
         );
 
-        prepareKnowledgeBase();
-        await prepareKnowledgeEmbeddings();
+        await prepareKnowledgeBase();
+        await prepareVectorIndex();
       }
 
       return extractor;
@@ -212,70 +215,130 @@
 
     async function initGenerator() {
       if (!generator) {
-        const device = getBestDevice();
+        // const device = getBestDevice();
+
+        // generator = await pipeline(
+        //   'text-generation',
+        //   'onnx-community/Qwen2.5-0.5B-Instruct'
+        // );
 
         generator = await pipeline(
           'text-generation',
-          'onnx-community/Qwen2.5-0.5B-Instruct'
+          'onnx-community/Llama-3.2-1B-Instruct',
+          {
+            device: getBestDevice(),
+            dtype: navigator.gpu ? 'q4f16' : 'q8'
+          }
         );
       }
 
       return generator;
     }
 
-    function prepareKnowledgeBase() {
+
+    async function prepareKnowledgeBase() {
       if (knowledgeBase.length > 0) return;
 
-      // 1. Extract experience timeline chunks
-      document.querySelectorAll('.timeline-item').forEach(item => {
-        const role = item.querySelector('h3') ? item.querySelector('h3').innerText : '';
-        const company = item.querySelector('.meta') ? item.querySelector('.meta').innerText : '';
-        const contextStr = `${role} at ${company}`;
+      await loadReadmeKnowledge(knowledgeBase);
 
-        item.querySelectorAll('li').forEach(li => {
-          const text = li.innerText.replace(/\s+/g, ' ').trim();
-          if (text.length > 5) knowledgeBase.push({ text: `Experience - ${contextStr}: ${text}` });
-        });
-      });
+      // // 1. Extract experience timeline chunks
+      // document.querySelectorAll('.timeline-item').forEach(item => {
+      //   const role = item.querySelector('h3') ? item.querySelector('h3').innerText : '';
+      //   const company = item.querySelector('.meta') ? item.querySelector('.meta').innerText : '';
+      //   const contextStr = `${role} at ${company}`;
 
-      // 2. Extract standard card chunks (Skills, Summary, Education)
-      document.querySelectorAll('.card').forEach(card => {
-        const titleMatch = card.querySelector('.section-title');
-        let sectionTitle = titleMatch ? titleMatch.innerText.replace(/\[|\]/g, '').trim() : '';
+      //   item.querySelectorAll('li').forEach(li => {
+      //     const text = li.innerText.replace(/\s+/g, ' ').trim();
+      //     if (text.length > 5) knowledgeBase.push({ text: `Experience - ${contextStr}: ${text}` });
+      //   });
+      // });
 
-        card.querySelectorAll('li').forEach(li => {
-          const text = li.innerText.replace(/\s+/g, ' ').trim();
-          if (text.length > 5) knowledgeBase.push({ text: `${sectionTitle}: ${text}` });
-        });
+      // // 2. Extract standard card chunks (Skills, Summary, Education)
+      // document.querySelectorAll('.card').forEach(card => {
+      //   const titleMatch = card.querySelector('h3, .section-title, h2');
+      //   let sectionTitle = titleMatch ? titleMatch.innerText.replace(/\[|\]/g, '').trim() : '';
 
-        card.querySelectorAll('p:not(.meta)').forEach(p => {
-          const text = p.innerText.replace(/\s+/g, ' ').trim();
-          if (text.length > 5) knowledgeBase.push({ text: `${sectionTitle}: ${text}` });
-        });
-      });
+      //   card.querySelectorAll('li').forEach(li => {
+      //     const text = li.innerText.replace(/\s+/g, ' ').trim();
+      //     if (text.length > 5) knowledgeBase.push({ text: `${sectionTitle}: ${text}` });
+      //   });
+
+      //   card.querySelectorAll('p:not(.meta)').forEach(p => {
+      //     const text = p.innerText.replace(/\s+/g, ' ').trim();
+      //     if (text.length > 5) knowledgeBase.push({ text: `${sectionTitle}: ${text}` });
+      //   });
+      // });
 
       // Fallback answers injected as chunks
-      knowledgeBase.push({ text: "I am Krunal Puri's digital AI persona, embedded in this portfolio to answer questions about my experience, skills, and projects." });
-      knowledgeBase.push({ text: "Krunal Puri is a Senior Data Scientist and AI Engineer with over 8 years of experience building scalable systems and AI solutions." });
+      knowledgeBase.push({ text: "I am Krunal Puri's digital AI persona, embedded in this portfolio to answer questions about my experience, skills, and projects." }); knowledgeBase.push({ text: "Krunal Puri is a Senior Data Scientist and AI Engineer with over 8 years of experience building scalable systems and AI solutions." });
       knowledgeBase.push({ text: "I know the following programming languages: Java, Python, Dart, Go, TypeScript, JavaScript, C, C++, PHP, Ruby, and CUDA C." });
       knowledgeBase.push({ text: "My Cloud and DevOps experience includes AWS, Docker, Jenkins, OpenShift, OpenStack, CI/CD, and Infrastructure as Code." });
       knowledgeBase.push({ text: "I received my Master's degree in Computer Science from The George Washington University." });
       knowledgeBase.push({ text: "At NIST, I was a Guest Researcher and I developed the Evaluation Management System for data science competitions." });
+
+
     }
 
-    async function prepareKnowledgeEmbeddings() {
-      if (knowledgeEmbeddingsReady) return;
+    async function prepareVectorIndex() {
+      if (vectorIndexReady) return;
 
-      for (const chunk of knowledgeBase) {
+      await initAltorVec();
+
+      const embeddings = [];
+
+      for (let id = 0; id < knowledgeBase.length; id++) {
+        const chunk = knowledgeBase[id];
+
         const output = await extractor(chunk.text, {
           pooling: 'mean',
           normalize: true
         });
 
-        chunk.embedding = output.data;
+        // Store IDs explicitly so altor-vec results map back to knowledgeBase.
+        chunk.id = id;
+
+        // altor-vec expects Float32Array vectors.
+        embeddings.push(...Array.from(output.data));
       }
 
-      knowledgeEmbeddingsReady = true;
+      const dimensions = 384;
+      const flatEmbeddings = new Float32Array(embeddings);
+
+      vectorEngine = WasmSearchEngine.from_vectors(
+        flatEmbeddings,
+        dimensions,
+        16,   // m: graph connections per node
+        200,  // ef_construction: build-time search width
+        50    // ef_search: query-time search width
+      );
+
+      vectorIndexReady = true;
+    }
+
+    async function retrieveTopMatches(input, topK = 5) {
+      const output = await extractor(input, {
+        pooling: 'mean',
+        normalize: true
+      });
+
+      const queryEmbedding = new Float32Array(output.data);
+
+      const rawResults = JSON.parse(vectorEngine.search(queryEmbedding, topK));
+
+      return rawResults.map(([id, distance]) => {
+        const chunk = knowledgeBase[id];
+
+        // Convert distance into a score-like value.
+        // With normalized embeddings, lower distance means better match.
+        const score = 1 / (1 + distance);
+
+        return {
+          id,
+          score,
+          distance,
+          text: chunk.text
+        };
+      });
     }
 
     function addMessage(text, isUser = false, isLoading = false) {
@@ -293,7 +356,7 @@
       const messagesContainer = document.getElementById("chatbot-messages");
       messagesContainer.innerHTML = `
         <div class="chat-message bot-message">
-          I am the digital AI persona of Krunal Puri. Ask me anything about my experience, skills, or projects!
+          I am the digital AI persona of Krunal Puri. Ask me anything about my experience, skills, or projects! I'm using a small language model that runs on your browser, so please be patient with my responses and I can definitely hallucinate sometimes!
         </div>
       `;
       chatHistory.forEach(msg => {
@@ -327,22 +390,14 @@
         // 1. Fast Semantic Search
         const model = await initAI();
 
-        // Generate embedding for the user's question
-        const output = await model(input, { pooling: 'mean', normalize: true });
-        const questionEmbedding = output.data;
-
-        // Compare question to cached knowledge-base embeddings
-        const matches = [];
-
-        for (const chunk of knowledgeBase) {
-          const score = cos_sim(questionEmbedding, chunk.embedding);
-          matches.push({ score, text: chunk.text });
-        }
-
-        matches.sort((a, b) => b.score - a.score);
-
-        const topMatches = matches.slice(0, 3);
+        const topMatches = await retrieveTopMatches(input, 3);
         const bestMatch = topMatches[0];
+
+        if (!bestMatch) {
+          loadingMsg.classList.remove("message-loading");
+          loadingMsg.innerHTML = `<span style="color: var(--accent-pink);">I'm not completely sure about that based on the portfolio.</span>`;
+          return;
+        }
 
         const ragContext = topMatches
           .map((match, index) => `Context ${index + 1}: ${match.text}`)
@@ -372,7 +427,7 @@
           loadingMsg.innerHTML = `<span style="color: var(--accent-cyan);">${directAnswer}</span>`;
         } else {
           // 2. Display Loading State (Hide Raw Fast Match for persona immersion)
-          let answer = bestMatch.text;
+          // let answer = bestMatch.text;
           let genLoadingNote = !generator ? "Downloading AI model..." : "Thinking...";
 
           loadingMsg.innerHTML = `
