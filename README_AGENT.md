@@ -1,51 +1,37 @@
 # Krunal Puri
 
 ## Profile Summary
-
 Krunal Puri is a Senior Data Scientist, AI/ML Engineer, Full Stack Engineer, Cloud Engineer, and Blockchain Engineer with 8+ years of experience building intelligent, scalable systems.
-
 He specializes in LLM-driven agents, machine learning pipelines, cloud-native systems, microservices architectures, secure data infrastructure, and blockchain-enabled applications.
 
 ## Core Skills
 
 ### Languages
-
 Java, Python, Dart, Go, TypeScript, JavaScript, C, C++, PHP, Ruby, CUDA C.
 
 ### AI and Machine Learning
-
 PyTorch, TensorFlow, natural language processing, entity recognition, predictive modeling, face recognition, malware detection, LLM-driven agents, machine learning pipelines.
 
 ### Backend and Full Stack
-
 Spring Boot, Spring Cloud, Hibernate, JPA, Flutter, React, Angular, Ruby on Rails, Grails, REST APIs, microservices.
 
 ### Cloud and DevOps
-
 AWS, Docker, Jenkins, OpenShift, OpenStack, CI/CD, Infrastructure as Code.
 
 ### Databases and Data Platforms
-
 SQL databases: MySQL, PostgreSQL, Oracle, SQL Server.
-
 NoSQL databases: MongoDB, Redis, DynamoDB, Firebase.
-
 Big data storage and processing: HDFS, Hadoop, Spark.
 
 ### Tools and Observability
-
 Git, Keycloak, Grafana, Prometheus, Graylog, Elasticsearch.
 
 ### Blockchain
-
 Ethereum, Solidity, Truffle, React Web3, blockchain-based data provenance, dividend token platform.
 
 ## Professional Experience
-
 ### BCM Consulting Group LLC — Senior Data Scientist / Software Engineer — Jan 2018–Present
-
 Summary: Leads AI, cloud, mobile, microservices, blockchain, and machine learning projects.
-
 Responsibilities:
 - Led development of cross-platform mobile apps for Android and iOS using Flutter and BLoC architecture.
 - Integrated Firebase services into mobile applications.
@@ -62,10 +48,11 @@ Technologies: Flutter, BLoC, Firebase, Java, Go, TypeScript, Netflix OSS, Keyclo
 ### The George Washington University — Research Assistant — May 2016–Present
 
 Summary: Conducts research in distributed systems, containers, big data, and blockchain data provenance.
-
 Responsibilities:
 - Conducted research in distributed systems, containers, and big data.
-- Collaborated with NIST on blockchain-based data provenance.
+- Collaborated with NIST on developing an Evaluation Management System (EMS) for data science competitions.
+- Designed scalable infrastructure for Hadoop and Spark workloads.
+- Deployed OpenStack with big data framework support.
 
 Technologies: distributed systems, containers, big data, blockchain, data provenance.
 
@@ -76,6 +63,7 @@ Summary: Developed evaluation infrastructure and scalable big data systems for d
 Responsibilities:
 - Developed the Evaluation Management System for data science competitions.
 - Designed scalable infrastructure for Hadoop and Spark workloads.
+- Supported data scientists by provisioning big data environments on demand.
 
 Technologies: Evaluation Management System, NIST, Hadoop, Spark, scalable infrastructure, data science competitions.
 
@@ -86,8 +74,9 @@ Summary: Led lab sessions and mentored students.
 Responsibilities:
 - Led lab sessions.
 - Mentored students.
+- Graded assignments and provided technical guidance to students.
 
-Technologies: teaching, mentoring, lab instruction.
+Teaching Skills: teaching, mentoring, lab instruction.
 
 ### BCM Consulting Group LLC — Junior Software Engineer — Jul 2015–Aug 2015
 
@@ -123,47 +112,32 @@ Technologies: web development, e-commerce, corporate websites.
 ## Selected Projects and Publications
 
 ### Research Publication
-
 Summary: Research publication available on Google Scholar.
-
-Link: Google Scholar profile.
+A deep neural network accelerator using residue arithmetic in a hybrid optoelectronic system
 
 ### Blockchain Data Provenance Framework
-
 Summary: System for data integrity in distributed environments.
-
 Technologies: blockchain, data provenance, distributed systems, data integrity.
 
 ### Evaluation Management System
-
 Summary: Platform for benchmarking data science models and managing data science competitions.
-
 Technologies: NIST, data science competitions, benchmarking, Hadoop, Spark.
 
 ### WMATA Smart Alarm App
-
 Summary: Android app using motion detection for transit alerts.
-
 Technologies: Android, mobile development, motion detection, transit.
 
 ### Smart Irrigation System
-
 Summary: GIS and sensor-based system for soil moisture automation.
-
 Technologies: GIS, sensors, soil moisture, automation.
 
 ## Education and Certifications
-
 ### PhD in Computer Engineering
 
 Institution: The George Washington University.
-
 Status: In Progress.
 
 ### Master’s in Computer Science
-
 Institution: The George Washington University.
 
-### AWS Certified Solutions Architect
-
-Level: Associate.
+### Certification: AWS Certified Solutions Architect - Associate
